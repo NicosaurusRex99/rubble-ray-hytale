@@ -1,20 +1,23 @@
 {
-  "Group": "dev.hytalemodding",
-  "Name": "ExamplePlugin",
-  "Version": "1.0.0",
-  "Description": "Description of your plugin",
-  "Authors": [
-    {
-      "Name": "Your Name",
-      "Email": "your.email@example.com",
-      "Url": "https://your-website.com"
-    }
-  ],
-  "Website": "https://your-plugin-website.com",
-  "ServerVersion": "*",
-  "Dependencies": {},
-  "OptionalDependencies": {},
-  "DisabledByDefault": false,
-  "IncludesAssetPack": false,
-  "Main": "dev.hytalemodding.ExamplePlugin"
+    "Group": "Nicusha",
+    "Name": "Rubble Ray",
+    "Version": "2026.1.28-39637",
+    "Description": "Rubble Ray mod is very inspired by an item from the classic minecraft mod OreSpawn, the Miner's Dream.",
+    "Authors": [
+        {
+            "Name": "Nicusha",
+            "Url": "https://legacy.curseforge.com/members/nicusha/projects"
+        }
+    ],
+    "Website": "https://legacy.curseforge.com/hytale/mods/rubble-ray",
+    "ServerVersion": "*",
+    "Dependencies": {
+        
+    },
+    "OptionalDependencies": {
+        
+    },
+    "DisabledByDefault": false,
+    "IncludesAssetPack": true,
+    "Main": "com.rubble_ray.Main"
 }

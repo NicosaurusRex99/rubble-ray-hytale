@@ -1,0 +1,22 @@
+{
+  "TranslationProperties": {
+    "Name": "items.nicusha.rubble_ray.name",
+    "Description": "items.nicusha.rubble_ray.description"
+  },
+  "Id": "Rubble_Ray",
+  "Icon": "Icons/ItemsGenerated/rubble_ray.png",
+  "Quality": "Common",
+  "MaxStack": 1,
+  "Categories": [
+    "Items.Example"
+  ],
+  "Interactions": {
+  "Secondary": {
+    "Interactions": [
+      {
+        "Type": "rubble_ray_interaction"
+      }
+    ]
+  }
+}
+}
