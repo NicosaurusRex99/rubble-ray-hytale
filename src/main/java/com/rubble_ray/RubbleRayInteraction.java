@@ -34,14 +34,13 @@ public class RubbleRayInteraction extends SimpleInstantInteraction {
     private static final HytaleLogger LOGGER =
             HytaleLogger.forEnclosingClass();
 
-    // Configurable tunnel dimensions
-    private final int width = 2;   // horizontal half-width
-    private final int height = 3;  // vertical height
-    private final int length = 40; // forward length
+    /* ==============================
+       TUNNEL CONFIG
+       ============================== */
 
-    private final boolean generateFloor = true;
-    private final boolean generateRoof = true;
-    private final boolean generateWalls = true;
+    private final int WIDTH  = 5;
+    private final int HEIGHT = 5;
+    private final int LENGTH = 64;
 
     public RubbleRayInteraction() {}
 
@@ -51,16 +50,15 @@ public class RubbleRayInteraction extends SimpleInstantInteraction {
             @Nonnull InteractionContext interactionContext,
             @Nonnull CooldownHandler cooldownHandler
     ) {
+
         var commandBuffer = interactionContext.getCommandBuffer();
         Ref<EntityStore> ref = interactionContext.getEntity();
         LivingEntity entity = (LivingEntity) EntityUtils.getEntity(ref, commandBuffer);
 
-        if (!(entity instanceof Player player)) {
-            return;
-        }
+        if (!(entity instanceof Player player)) return;
 
-        ItemStack itemStack = interactionContext.getHeldItem();
-        if (itemStack == null) return;
+        ItemStack stack = interactionContext.getHeldItem();
+        if (stack == null) return;
 
         TransformComponent transform =
                 commandBuffer.getComponent(ref, TransformComponent.getComponentType());
@@ -68,35 +66,50 @@ public class RubbleRayInteraction extends SimpleInstantInteraction {
 
         World world = commandBuffer.getExternalData().getWorld();
 
-        // Start from player's eyes
-        Vector3d startVec = transform.getPosition().add(0, 1.6, 0);
+        /* ==============================
+           POSITION
+           ============================== */
 
-        Vector3d forward = getForwardVector(transform.getRotation()).normalize();
+        Vector3d start = transform.getPosition().add(0, 0.6, 0);
 
-        // Determine dominant direction (X or Z) for tunnel
-        int deltax, deltaz;
-        if (Math.abs(forward.x) > Math.abs(forward.z)) {
+        /* ==============================
+           FACING DIRECTION (CORRECT)
+           ============================== */
+
+        Vector3f axis = transform.getTransform().getAxisDirection().toVector3f();
+
+        int deltax;
+        int deltaz;
+
+        if (Math.abs(axis.x) > Math.abs(axis.z)) {
             deltaz = 0;
-            deltax = forward.x > 0 ? 1 : -1;
+            deltax = axis.x > 0 ? 1 : -1;
         } else {
             deltax = 0;
-            deltaz = forward.z > 0 ? 1 : -1;
+            deltaz = axis.z > 0 ? 1 : -1;
         }
 
-        if (deltax == 0 && deltaz == 0) return;
+        int baseX = (int) Math.floor(start.x);
+        int baseY = (int) Math.floor(start.y);
+        int baseZ = (int) Math.floor(start.z);
 
-        int baseY = (int) Math.floor(startVec.y);
+        /* ==============================
+           TUNNEL EXECUTION
+           ============================== */
 
         commandBuffer.run(store -> {
-            for (int i = 0; i < length; i++) {           // forward
-                for (int h = 0; h < height; h++) {      // vertical
-                    for (int w = -width; w <= width; w++) { // horizontal
-                        int x = (int) Math.floor(startVec.x) + i * deltax + w * deltaz;
-                        int y = baseY + h;
-                        int z = (int) Math.floor(startVec.z) + i * deltaz + w * deltax;
 
-                        var blockType = world.getBlockType(x, y, z);
-                        if (blockType != null && blockType != BlockType.EMPTY) {
+            for (int k = 0; k < LENGTH; k++) {
+                for (int h = 0; h < HEIGHT; h++) {
+                    for (int w = -WIDTH; w <= WIDTH; w++) {
+
+                        int x = baseX + k * deltax + w * deltaz;
+                        int y = baseY + h;
+                        int z = baseZ + k * deltaz + w * deltax;
+
+                        BlockType block = world.getBlockType(x, y, z);
+
+                        if (block != null && block != BlockType.EMPTY && !block.getId().contains("Ore_")) {
                             world.breakBlock(x, y, z, 0);
                         }
                     }
@@ -104,8 +117,11 @@ public class RubbleRayInteraction extends SimpleInstantInteraction {
             }
         });
 
-        relay(interactionContext, player, "Tunnel carved successfully", false);
     }
+
+    /* ==============================
+       HELPERS
+       ============================== */
 
     private void relay(
             InteractionContext context,
@@ -115,21 +131,10 @@ public class RubbleRayInteraction extends SimpleInstantInteraction {
     ) {
         LOGGER.atInfo().log("[RubbleRay] %s", message);
         if (player != null) {
-            player.sendMessage(Message.raw("§6[RubbleRay] §f" + message));
+            player.sendMessage(Message.raw("[RubbleRay] " + message));
         }
         if (fail) {
             context.getState().state = InteractionState.Failed;
         }
-    }
-
-    private Vector3d getForwardVector(Vector3f rotation) {
-        float yawRad = (float) Math.toRadians(rotation.y);
-        float pitchRad = (float) Math.toRadians(rotation.x);
-
-        double x = Math.sin(yawRad) * Math.cos(pitchRad);
-        double y = -Math.sin(pitchRad);
-        double z = Math.cos(yawRad) * Math.cos(pitchRad);
-
-        return new Vector3d(x, y, z);
     }
 }
